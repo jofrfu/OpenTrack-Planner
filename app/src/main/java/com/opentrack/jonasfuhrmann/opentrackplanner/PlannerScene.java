@@ -9,19 +9,21 @@ import android.util.Log;
 import android.view.Gravity;
 import android.widget.Toast;
 
-import com.google.ar.core.Anchor;
 import com.google.ar.core.Plane;
 import com.google.ar.core.Pose;
-import com.google.ar.core.Session;
 import com.google.ar.core.TrackingState;
-import com.google.ar.sceneform.AnchorNode;
 import com.google.ar.sceneform.Camera;
 import com.google.ar.sceneform.FrameTime;
+import com.google.ar.sceneform.Node;
 import com.google.ar.sceneform.math.Vector3;
 import com.google.ar.sceneform.rendering.ModelRenderable;
 import com.google.ar.sceneform.ux.ArFragment;
+import com.opentrack.jonasfuhrmann.opentrackplanner.Track.CurrentTrackNode;
 
 import java.util.Collection;
+
+import static com.opentrack.jonasfuhrmann.opentrackplanner.VectorHelper.floatToVec;
+import static com.opentrack.jonasfuhrmann.opentrackplanner.VectorHelper.vecToFloat;
 
 public class PlannerScene extends AppCompatActivity {
     private static final String TAG = PlannerScene.class.getSimpleName();
@@ -29,7 +31,7 @@ public class PlannerScene extends AppCompatActivity {
 
     private ArFragment arFragment;
     private ModelRenderable straightRenderable;
-    private AnchorNode anchorNode;
+    private CurrentTrackNode currentTrackNode;
 
     @Override
     @SuppressWarnings({"AndroidApiChecker", "FutureReturnValueIgnored"})
@@ -71,69 +73,11 @@ public class PlannerScene extends AppCompatActivity {
             return;
         }
 
-        float[] pos = { 0,0,0 };
-        float[] rotation = {0,0,0,1};
-        if (this.anchorNode == null) {
-            Session session = arFragment.getArSceneView().getSession();
-            Anchor anchor =  session.createAnchor(new Pose(pos, rotation));
-            anchorNode = new AnchorNode(anchor);
-            anchorNode.setRenderable(straightRenderable);
-            anchorNode.setParent(arFragment.getArSceneView().getScene());
+        if (currentTrackNode == null) {
+            currentTrackNode = new CurrentTrackNode(arFragment.getArSceneView().getSession());
+            currentTrackNode.setRenderable(straightRenderable);
+            currentTrackNode.setParent(arFragment.getArSceneView().getScene());
         }
-
-        Session session = arFragment.getArSceneView().getSession();
-        Collection<Plane> planeList = session.getAllTrackables(Plane.class);
-
-        for(Plane plane : planeList) {
-            float[] intersection = getIntersection(plane);
-            if(intersection != null) {
-                Pose pose = new Pose(intersection, rotation);
-                anchorNode.setAnchor(session.createAnchor(pose));
-                break;
-            }
-        }
-    }
-
-    private float[] getIntersection(Plane plane) {
-        Camera camera = arFragment.getArSceneView().getScene().getCamera();
-
-        Pose center = plane.getCenterPose();
-
-        Vector3 cameraPosition = camera.getWorldPosition();
-        Vector3 cameraDirection = camera.getForward();
-
-        float pointA[] = center.transformPoint(new float[]{1, 0, 0}); // x axis
-        float pointB[] = center.transformPoint(new float[]{0, 0, 1}); // z axis
-
-        float centerPoint[] = center.transformPoint(new float[]{0, 0, 0}); // origin
-
-        Vector3 dirA = Vector3.subtract(floatToVec(pointA), floatToVec(centerPoint));
-        Vector3 dirB = Vector3.subtract(floatToVec(pointB), floatToVec(centerPoint));
-
-        Vector3 normal = Vector3.cross(dirA, dirB);
-
-        float t = -Vector3.dot(normal, Vector3.subtract(cameraPosition, floatToVec(centerPoint)))
-                  / Vector3.dot(normal, cameraDirection);
-
-        float intersection[] = vecToFloat(Vector3.add(cameraPosition, cameraDirection.scaled(t)));
-
-        Pose checkPose = new Pose(intersection, new float[]{0, 0, 0, 1});
-        if(!plane.isPoseInExtents(checkPose)) {
-            return null;
-        }
-        return intersection;
-    }
-
-    private Vector3 floatToVec(float[] vector) {
-        Vector3 vec = new Vector3();
-        vec.x = vector[0];
-        vec.y = vector[1];
-        vec.z = vector[2];
-        return vec;
-    }
-
-    private float[] vecToFloat(Vector3 vector) {
-        return new float[]{vector.x, vector.y, vector.z};
     }
 
     /**
