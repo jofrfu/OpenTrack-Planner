@@ -1,17 +1,31 @@
 package com.opentrack.jonasfuhrmann.opentrackplanner.Track;
 
-import com.google.ar.sceneform.Node;
 import com.google.ar.sceneform.math.Quaternion;
 import com.google.ar.sceneform.math.Vector3;
 
 public class TrackEdge {
 
-    private static final float EPSILON = 0.03f; // TODO: change to good value
+    private static final float EPSILON = 0.04f; // TODO: change to good value
 
-    private Vector3 localNormalOrig;
+    // For mm to m conversion
+    private static final float SCALE = 0.001f;
+    private static final TrackEdge[][] EDGES = {
+            {       // Straight track edges
+                    new TrackEdge(new Vector3(0,0,-64f*SCALE), new Vector3(0,0,-74f*SCALE)),
+                    new TrackEdge(new Vector3(0,0, 64f*SCALE), new Vector3(0,0, 74f*SCALE))
+            },
+            {       // R104 track edges
+                    // TODO: create edges
+            },
+            {       // R120 track edges
+                    // TODO: create edges
+            }
+    };
+
+    public Vector3 localNormalOrig;
     private Vector3 localNormDir;
 
-    private Vector3 normalOrig;
+    public Vector3 normalOrig;
     private Vector3 normDir;
 
     public TrackEdge(Vector3 normalOrigin, Vector3 normalEnd) {
@@ -19,6 +33,13 @@ public class TrackEdge {
         normDir = Vector3.subtract(normalEnd, normalOrig).normalized();
         localNormalOrig = normalOrig;
         localNormDir = normDir;
+    }
+
+    public TrackEdge(TrackEdge edge) {
+        normalOrig = new Vector3(edge.normalOrig);
+        normDir = new Vector3(edge.normDir);
+        localNormalOrig = new Vector3(edge.localNormalOrig);
+        localNormDir = new Vector3(edge.localNormDir);
     }
 
     public void transform(Vector3 worldPosition, Quaternion worldRotation) {
@@ -41,5 +62,13 @@ public class TrackEdge {
 
         // check if points are close enough
         return distance < EPSILON;
+    }
+
+    public static TrackEdge[] copyEdges(TrackType type) {
+        TrackEdge edges[] = new TrackEdge[EDGES[type.ordinal()].length];
+        for(int i = 0; i < EDGES[type.ordinal()].length; ++i) {
+            edges[i] = new TrackEdge(EDGES[type.ordinal()][i]);
+        }
+        return edges;
     }
 }

@@ -1,6 +1,5 @@
 package com.opentrack.jonasfuhrmann.opentrackplanner.Track;
 
-import com.google.ar.core.Anchor;
 import com.google.ar.core.Plane;
 import com.google.ar.core.Pose;
 import com.google.ar.core.Session;
@@ -8,9 +7,10 @@ import com.google.ar.sceneform.Camera;
 import com.google.ar.sceneform.FrameTime;
 import com.google.ar.sceneform.Node;
 import com.google.ar.sceneform.math.Vector3;
-import com.google.ar.sceneform.rendering.ModelRenderable;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import static com.opentrack.jonasfuhrmann.opentrackplanner.VectorHelper.floatToVec;
 import static com.opentrack.jonasfuhrmann.opentrackplanner.VectorHelper.quatToFloat;
@@ -21,16 +21,20 @@ public class CurrentTrackNode extends Node {
     private Session mSession;
     private TrackLoader mTrackLoader;
     private TrackType trackType;
+    private TrackEdge trackEdges[];
+    private List<TrackLayoutNode> trackLayoutNodes;
 
     public CurrentTrackNode(Session session, TrackLoader trackLoader) {
         super();
         mSession = session;
         mTrackLoader = trackLoader;
+        trackLayoutNodes = new ArrayList<>();
     }
 
     @Override
     public void onUpdate(FrameTime frameTime) {
         super.onUpdate(frameTime);
+
         Collection<Plane> planeList = mSession.getAllTrackables(Plane.class);
 
         for (Plane plane : planeList) {
@@ -40,29 +44,75 @@ public class CurrentTrackNode extends Node {
                 break;
             }
         }
+
+        if(trackEdges != null) {
+            for (TrackEdge edge : trackEdges) {
+                edge.transform(getWorldPosition(), getWorldRotation());
+
+                for (TrackLayoutNode layoutNode : trackLayoutNodes) {
+                    TrackEdge collidingEdge = layoutNode.checkConnection(edge);
+                    if (collidingEdge != null) {
+                        setWorldPosition(Vector3.subtract(collidingEdge.normalOrig, edge.localNormalOrig));
+                        return;
+                    }
+                }
+            }
+        }
     }
 
     public void changeTrackType(TrackType type) {
         trackType = type;
         setRenderable(mTrackLoader.createRenderable(trackType));
+        trackEdges = TrackEdge.copyEdges(type);
+        for(TrackEdge trackEdge : trackEdges) {
+            trackEdge.transform(getWorldPosition(), getWorldRotation());
+        }
     }
 
     public void placeTrack() {
-        TrackNode trackNode = new TrackNode(trackType);
-        trackNode.setParent(getScene());
-        trackNode.setWorldPosition(getWorldPosition());
-        trackNode.setWorldRotation(getWorldRotation());
+        TrackEdge edges[] = new TrackEdge[trackEdges.length];
+        for(int i = 0; i < trackEdges.length; ++i) {
+            edges[i] = new TrackEdge(trackEdges[i]);
+        }
+
+        TrackNode trackNode = new TrackNode(edges);
         trackNode.setRenderable(getRenderable());
+
+        if(trackLayoutNodes.isEmpty()) {
+            createLayout(trackNode);
+            return;
+        }
+
+        for(TrackLayoutNode layoutNode : trackLayoutNodes) {
+            if(layoutNode.connect(trackNode)) {
+                layoutNode.setParent(getScene());
+                trackNode.setParent(layoutNode);
+                trackNode.setWorldPosition(getWorldPosition());
+                trackNode.setWorldRotation(getWorldRotation());
+                return;
+            }
+        }
+
+        createLayout(trackNode);
+    }
+
+    private void createLayout(TrackNode track) {
+        TrackLayoutNode layoutNode = new TrackLayoutNode(track);
 
         Collection<Plane> planeList = mSession.getAllTrackables(Plane.class);
         Pose pose = new Pose(
-                vecToFloat(trackNode.getWorldPosition()),
-                quatToFloat(trackNode.getWorldRotation())
+                vecToFloat(getWorldPosition()),
+                quatToFloat(getWorldRotation())
         );
 
         for (Plane plane : planeList) {
             if(plane.isPoseInExtents(pose)) {
-                trackNode.setAnchor(plane.createAnchor(pose));
+                layoutNode.setParent(getScene());
+                track.setParent(layoutNode);
+                layoutNode.setWorldPosition(getWorldPosition());
+                layoutNode.setWorldRotation(getWorldRotation());
+                layoutNode.setAnchor(plane.createAnchor(pose));
+                trackLayoutNodes.add(layoutNode);
                 break;
             }
         }

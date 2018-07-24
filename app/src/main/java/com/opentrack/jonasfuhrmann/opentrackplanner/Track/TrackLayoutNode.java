@@ -39,14 +39,12 @@ public class TrackLayoutNode extends AnchorNode {
         return false;
     }
 
-    public boolean checkConnection(TrackEdge edges[]) {
-        for(TrackEdge edge1 : edges) {
-            for (TrackEdge edge2 : openEdges) {
-                if (TrackEdge.checkConnection(edge1, edge2)) {
-                    return true;
-                }
+    public TrackEdge checkConnection(TrackEdge edge) {
+        for (TrackEdge edge1 : openEdges) {
+            if (TrackEdge.checkConnection(edge, edge1)) {
+                return edge1;
             }
         }
-        return false;
+        return null;
     }
 }
