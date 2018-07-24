@@ -1,5 +1,6 @@
 package com.opentrack.jonasfuhrmann.opentrackplanner;
 
+import com.google.ar.sceneform.math.Quaternion;
 import com.google.ar.sceneform.math.Vector3;
 
 public class VectorHelper {
@@ -13,5 +14,18 @@ public class VectorHelper {
 
     public static float[] vecToFloat(Vector3 vector) {
         return new float[]{vector.x, vector.y, vector.z};
+    }
+
+    public static Quaternion floatToQuat(float[] quaternion) {
+        Quaternion quat = new Quaternion();
+        quat.x = quaternion[0];
+        quat.y = quaternion[0];
+        quat.z = quaternion[0];
+        quat.w = quaternion[0];
+        return quat;
+    }
+
+    public static float[] quatToFloat(Quaternion quaternion) {
+        return new float[]{quaternion.x, quaternion.y, quaternion.z, quaternion.w};
     }
 }

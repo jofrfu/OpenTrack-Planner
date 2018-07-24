@@ -1,5 +1,6 @@
 package com.opentrack.jonasfuhrmann.opentrackplanner.Track;
 
+import com.google.ar.core.Anchor;
 import com.google.ar.core.Plane;
 import com.google.ar.core.Pose;
 import com.google.ar.core.Session;
@@ -7,30 +8,61 @@ import com.google.ar.sceneform.Camera;
 import com.google.ar.sceneform.FrameTime;
 import com.google.ar.sceneform.Node;
 import com.google.ar.sceneform.math.Vector3;
-import com.google.ar.sceneform.ux.ArFragment;
+import com.google.ar.sceneform.rendering.ModelRenderable;
 
 import java.util.Collection;
 
 import static com.opentrack.jonasfuhrmann.opentrackplanner.VectorHelper.floatToVec;
+import static com.opentrack.jonasfuhrmann.opentrackplanner.VectorHelper.quatToFloat;
 import static com.opentrack.jonasfuhrmann.opentrackplanner.VectorHelper.vecToFloat;
 
 public class CurrentTrackNode extends Node {
 
     private Session mSession;
+    private TrackLoader mTrackLoader;
+    private TrackType trackType;
 
-    public CurrentTrackNode(Session session) {
+    public CurrentTrackNode(Session session, TrackLoader trackLoader) {
         super();
         mSession = session;
+        mTrackLoader = trackLoader;
     }
 
     @Override
     public void onUpdate(FrameTime frameTime) {
+        super.onUpdate(frameTime);
         Collection<Plane> planeList = mSession.getAllTrackables(Plane.class);
 
         for (Plane plane : planeList) {
             float[] intersection = getIntersection(plane);
             if (intersection != null) {
                 setWorldPosition(floatToVec(intersection));
+                break;
+            }
+        }
+    }
+
+    public void changeTrackType(TrackType type) {
+        trackType = type;
+        setRenderable(mTrackLoader.createRenderable(trackType));
+    }
+
+    public void placeTrack() {
+        TrackNode trackNode = new TrackNode(trackType);
+        trackNode.setParent(getScene());
+        trackNode.setWorldPosition(getWorldPosition());
+        trackNode.setWorldRotation(getWorldRotation());
+        trackNode.setRenderable(getRenderable());
+
+        Collection<Plane> planeList = mSession.getAllTrackables(Plane.class);
+        Pose pose = new Pose(
+                vecToFloat(trackNode.getWorldPosition()),
+                quatToFloat(trackNode.getWorldRotation())
+        );
+
+        for (Plane plane : planeList) {
+            if(plane.isPoseInExtents(pose)) {
+                trackNode.setAnchor(plane.createAnchor(pose));
                 break;
             }
         }

@@ -4,33 +4,25 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.Gravity;
 import android.widget.Toast;
 
-import com.google.ar.core.Plane;
-import com.google.ar.core.Pose;
 import com.google.ar.core.TrackingState;
-import com.google.ar.sceneform.Camera;
 import com.google.ar.sceneform.FrameTime;
-import com.google.ar.sceneform.Node;
-import com.google.ar.sceneform.math.Vector3;
-import com.google.ar.sceneform.rendering.ModelRenderable;
 import com.google.ar.sceneform.ux.ArFragment;
 import com.opentrack.jonasfuhrmann.opentrackplanner.Track.CurrentTrackNode;
+import com.opentrack.jonasfuhrmann.opentrackplanner.Track.TrackLoader;
+import com.opentrack.jonasfuhrmann.opentrackplanner.Track.TrackNode;
+import com.opentrack.jonasfuhrmann.opentrackplanner.Track.TrackType;
 
-import java.util.Collection;
-
-import static com.opentrack.jonasfuhrmann.opentrackplanner.VectorHelper.floatToVec;
-import static com.opentrack.jonasfuhrmann.opentrackplanner.VectorHelper.vecToFloat;
 
 public class PlannerScene extends AppCompatActivity {
     private static final String TAG = PlannerScene.class.getSimpleName();
     private static final double MIN_OPENGL_VERSION = 3.1;
 
     private ArFragment arFragment;
-    private ModelRenderable straightRenderable;
     private CurrentTrackNode currentTrackNode;
 
     @Override
@@ -45,21 +37,21 @@ public class PlannerScene extends AppCompatActivity {
         setContentView(R.layout.activity_ux);
 
         arFragment = (ArFragment) getSupportFragmentManager().findFragmentById(R.id.ux_fragment);
-
-        straightRenderable.builder()
-                .setSource(this, R.raw.straight)
-                .build()
-                .thenAccept(renderable -> straightRenderable = renderable)
-                .exceptionally(
-                        throwable -> {
-                            Toast toast =
-                                    Toast.makeText(this, "Unable to load andy renderable", Toast.LENGTH_LONG);
-                            toast.setGravity(Gravity.CENTER, 0, 0);
-                            toast.show();
-                            return null;
-                        });
-
         arFragment.getArSceneView().getScene().setOnUpdateListener(this::onSceneUpdate);
+
+        FloatingActionButton addButton = findViewById(R.id.addButton);
+        addButton.setOnClickListener(v -> {
+            if(currentTrackNode != null) {
+                currentTrackNode.placeTrack();
+            }
+        });
+
+        FloatingActionButton chooseButton = findViewById(R.id.chooseButton);
+        chooseButton.setOnClickListener(v -> {
+            if(currentTrackNode != null) {
+                currentTrackNode.changeTrackType(TrackType.STRAIGHT);
+            }
+        });
     }
 
     private void onSceneUpdate(FrameTime frameTime) {
@@ -74,8 +66,8 @@ public class PlannerScene extends AppCompatActivity {
         }
 
         if (currentTrackNode == null) {
-            currentTrackNode = new CurrentTrackNode(arFragment.getArSceneView().getSession());
-            currentTrackNode.setRenderable(straightRenderable);
+            currentTrackNode = new CurrentTrackNode(arFragment.getArSceneView().getSession(),
+                    new TrackLoader(this));
             currentTrackNode.setParent(arFragment.getArSceneView().getScene());
         }
     }
