@@ -6,6 +6,7 @@ import com.google.ar.core.Session;
 import com.google.ar.sceneform.Camera;
 import com.google.ar.sceneform.FrameTime;
 import com.google.ar.sceneform.Node;
+import com.google.ar.sceneform.math.Quaternion;
 import com.google.ar.sceneform.math.Vector3;
 
 import java.util.ArrayList;
@@ -16,12 +17,11 @@ import static com.opentrack.jonasfuhrmann.opentrackplanner.VectorHelper.floatToV
 import static com.opentrack.jonasfuhrmann.opentrackplanner.VectorHelper.quatToFloat;
 import static com.opentrack.jonasfuhrmann.opentrackplanner.VectorHelper.vecToFloat;
 
-public class CurrentTrackNode extends Node {
+public class CurrentTrackNode extends TrackNode {
 
     private Session mSession;
     private TrackLoader mTrackLoader;
     private TrackType trackType;
-    private TrackEdge trackEdges[];
     private List<TrackLayoutNode> trackLayoutNodes;
 
     public CurrentTrackNode(Session session, TrackLoader trackLoader) {
@@ -45,16 +45,12 @@ public class CurrentTrackNode extends Node {
             }
         }
 
-        if(trackEdges != null) {
-            for (TrackEdge edge : trackEdges) {
-                edge.transform(getWorldPosition(), getWorldRotation());
-
-                for (TrackLayoutNode layoutNode : trackLayoutNodes) {
-                    TrackEdge collidingEdge = layoutNode.checkConnection(edge);
-                    if (collidingEdge != null) {
-                        setWorldPosition(Vector3.subtract(collidingEdge.normalOrig, edge.localNormalOrig));
-                        return;
-                    }
+        for(Node edge : getChildren()) {
+            for(TrackLayoutNode layout : trackLayoutNodes) {
+                Node collidingEdge = layout.checkConnection(edge);
+                if(collidingEdge != null) {
+                    Vector3 normal = Vector3.subtract(edge.getWorldPosition(), edge.getParent().getWorldPosition());
+                    setWorldPosition(Vector3.subtract(collidingEdge.getWorldPosition(), normal));
                 }
             }
         }
@@ -63,36 +59,25 @@ public class CurrentTrackNode extends Node {
     public void changeTrackType(TrackType type) {
         trackType = type;
         setRenderable(mTrackLoader.createRenderable(trackType));
-        trackEdges = TrackEdge.copyEdges(type);
-        for(TrackEdge trackEdge : trackEdges) {
-            trackEdge.transform(getWorldPosition(), getWorldRotation());
-        }
+        setNormalOrigins(getLocalEdges(type));
     }
 
     public void placeTrack() {
-        TrackEdge edges[] = new TrackEdge[trackEdges.length];
-        for(int i = 0; i < trackEdges.length; ++i) {
-            edges[i] = new TrackEdge(trackEdges[i]);
-        }
-
-        TrackNode trackNode = new TrackNode(edges);
+        TrackNode trackNode = new TrackNode();
+        trackNode.setWorldPosition(getWorldPosition());
+        trackNode.setWorldRotation(getWorldRotation());
+        trackNode.setNormalOrigins(getLocalEdges(trackType));
         trackNode.setRenderable(getRenderable());
-
-        if(trackLayoutNodes.isEmpty()) {
-            createLayout(trackNode);
-            return;
-        }
 
         for(TrackLayoutNode layoutNode : trackLayoutNodes) {
             if(layoutNode.connect(trackNode)) {
                 layoutNode.setParent(getScene());
-                trackNode.setParent(layoutNode);
-                trackNode.setWorldPosition(getWorldPosition());
-                trackNode.setWorldRotation(getWorldRotation());
                 return;
             }
         }
 
+        trackNode.setWorldPosition(new Vector3(0,0,0));
+        trackNode.setWorldRotation(new Quaternion(0,0,0,1));
         createLayout(trackNode);
     }
 

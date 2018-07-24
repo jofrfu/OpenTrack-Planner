@@ -1,15 +1,10 @@
 package com.opentrack.jonasfuhrmann.opentrackplanner.Track;
 
 import android.content.Context;
-import android.os.AsyncTask;
 import android.view.Gravity;
 import android.widget.Toast;
 
 import com.google.ar.sceneform.rendering.ModelRenderable;
-
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 public class TrackLoader {
 
@@ -20,6 +15,7 @@ public class TrackLoader {
         mContext = context;
         modelList = new ModelRenderable[TrackType.values().length];
 
+        // TODO: change to length
         TrackType types[] = TrackType.values();
         for (int i = 0; i < 1; i++) {
             int finalI = i;

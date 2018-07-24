@@ -5,7 +5,7 @@ import com.google.ar.sceneform.math.Vector3;
 
 public class TrackEdge {
 
-    private static final float EPSILON = 0.04f; // TODO: change to good value
+    private static final float EPSILON = 0.08f; // TODO: change to good value
 
     // For mm to m conversion
     private static final float SCALE = 0.001f;

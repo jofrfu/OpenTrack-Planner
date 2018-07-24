@@ -1,14 +1,15 @@
 package com.opentrack.jonasfuhrmann.opentrackplanner.Track;
 
 import com.google.ar.sceneform.AnchorNode;
+import com.google.ar.sceneform.Node;
+import com.google.ar.sceneform.math.Vector3;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class TrackLayoutNode extends AnchorNode {
     private List<TrackNode> trackList;
-    private List<TrackEdge> openEdges;
+    private List<Node> openEdges;
 
     public TrackLayoutNode() {
         trackList = new ArrayList<>();
@@ -19,17 +20,19 @@ public class TrackLayoutNode extends AnchorNode {
         this();
         addChild(track);
         trackList.add(track);
-        openEdges.addAll(Arrays.asList(track.getEdges()));
+        openEdges.addAll(track.getChildren());
     }
 
     public boolean connect(TrackNode track) {
-        TrackEdge edges[] = track.getEdges();
-        for(TrackEdge edge1 : edges) {
-            for(TrackEdge edge2 : openEdges) {
-                if(TrackEdge.checkConnection(edge1, edge2)) {
-                    addChild(track);
+        List<Node> nodes = track.getChildren();
+        for(Node edge1 : nodes) {
+            for(Node edge2 : openEdges) {
+                if(TrackNode.checkConnection(edge1, edge2)) {
+                    Vector3 localPoint = worldToLocalPoint(track.getWorldPosition());
+                    track.setParent(this);
+                    track.setLocalPosition(localPoint);
                     trackList.add(track);
-                    openEdges.addAll(Arrays.asList(edges));
+                    openEdges.addAll(nodes);
                     openEdges.remove(edge1);
                     openEdges.remove(edge2);
                     return true;
@@ -39,9 +42,9 @@ public class TrackLayoutNode extends AnchorNode {
         return false;
     }
 
-    public TrackEdge checkConnection(TrackEdge edge) {
-        for (TrackEdge edge1 : openEdges) {
-            if (TrackEdge.checkConnection(edge, edge1)) {
+    public Node checkConnection(Node edge) {
+        for (Node edge1 : openEdges) {
+            if (TrackNode.checkConnection(edge, edge1)) {
                 return edge1;
             }
         }
