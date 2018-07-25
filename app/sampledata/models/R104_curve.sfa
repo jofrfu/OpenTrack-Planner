@@ -1,0 +1,41 @@
+{
+   materials: [
+      {
+         name: "DefaultMaterial",
+         parameters: [
+            {
+               baseColor: null,
+            },
+            {
+               baseColorTint: [
+                  0.057,
+                  0.104,
+                  0.139,
+                  1,
+               ],
+            },
+            {
+               metallic: 0,
+            },
+            {
+               roughness: 0.75,
+            },
+            {
+               opacity: null,
+            },
+         ],
+         source: "build/sceneform_sdk/default_materials/obj_material.sfm",
+      },
+   ],
+   model: {
+      attributes: [
+         "Position",
+         "Orientation",
+      ],
+      collision: {},
+      file: "sampledata/models/R104_curve.obj",
+      name: "R104_curve",
+      scale: 0.001,
+   },
+   version: "0.51:1",
+}

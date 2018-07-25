@@ -22,8 +22,8 @@ public class TrackNode extends Node {
             },
             // R104 TODO: corrections
             {
-                    new Vector3(0,0,-152f*SCALE),
-                    Quaternion.rotateVector(new Quaternion(1, 1, 1, (float)Math.cos(11.25d/2d)), new Vector3(0,0,152f*SCALE))
+                    new Vector3(0,0,-80f*SCALE),
+                    //Quaternion.rotateVector(new Quaternion(1, 1, 1, (float)Math.cos(11.25d/2d)), new Vector3(0,0,152f*SCALE))
             },
             // R120 TODO: corrections
             {
