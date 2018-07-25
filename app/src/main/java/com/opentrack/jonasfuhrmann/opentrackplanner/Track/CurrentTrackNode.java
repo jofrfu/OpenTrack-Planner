@@ -69,6 +69,7 @@ public class CurrentTrackNode extends TrackNode {
                 if(collidingEdge != null) {
                     Vector3 normal = Vector3.subtract(edge.getWorldPosition(), edge.getParent().getWorldPosition());
                     setWorldPosition(Vector3.subtract(collidingEdge.getWorldPosition(), normal));
+                    break;
                 }
             }
         }

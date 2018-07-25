@@ -4,6 +4,8 @@ import com.google.ar.sceneform.Node;
 import com.google.ar.sceneform.math.Quaternion;
 import com.google.ar.sceneform.math.Vector3;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class TrackNode extends Node {
@@ -31,7 +33,14 @@ public class TrackNode extends Node {
     };
 
     public void setNormalOrigins(Vector3... normalOrigins) {
-        for (Vector3 normalOrigin : normalOrigins) {
+        List<Node> childNodes = new ArrayList<>(getChildren());
+        if(!childNodes.isEmpty()) {
+            for(int i = 0; i < childNodes.size(); i++) {
+                removeChild(childNodes.get(i));
+            }
+        }
+
+        for(Vector3 normalOrigin : normalOrigins) {
             Node temp = new Node();
             temp.setLocalPosition(normalOrigin);
             temp.setParent(this);
