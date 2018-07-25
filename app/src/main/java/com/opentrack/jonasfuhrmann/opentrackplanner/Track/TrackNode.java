@@ -1,6 +1,7 @@
 package com.opentrack.jonasfuhrmann.opentrackplanner.Track;
 
 import com.google.ar.sceneform.Node;
+import com.google.ar.sceneform.math.Quaternion;
 import com.google.ar.sceneform.math.Vector3;
 
 import java.util.List;
@@ -19,8 +20,8 @@ public class TrackNode extends Node {
             },
             // R104 TODO: corrections
             {
-                    new Vector3(0,0,0),
-                    new Vector3(0,0,0)
+                    new Vector3(0,0,-152f*SCALE),
+                    Quaternion.rotateVector(new Quaternion(1, 1, 1, (float)Math.cos(11.25d/2d)), new Vector3(0,0,152f*SCALE))
             },
             // R120 TODO: corrections
             {

@@ -15,9 +15,8 @@ public class TrackLoader {
         mContext = context;
         modelList = new ModelRenderable[TrackType.values().length];
 
-        // TODO: change to length
         TrackType types[] = TrackType.values();
-        for (int i = 0; i < 1; i++) {
+        for (int i = 0; i < modelList.length; i++) {
             int finalI = i;
             ModelRenderable.builder()
                     .setSource(mContext, types[i].RESOURCE_ID)

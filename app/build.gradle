@@ -42,3 +42,8 @@ sceneform.asset('sampledata/models/straight.obj',
         'default',
         'sampledata/models/straight.sfa',
         'src/main/res/raw/straight')
+
+sceneform.asset('sampledata/models/R104_curve.obj',
+        'default',
+        'sampledata/models/R104_curve.sfa',
+        'src/main/res/raw/r104_curve')

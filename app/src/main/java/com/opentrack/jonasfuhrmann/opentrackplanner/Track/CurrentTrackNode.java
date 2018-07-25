@@ -11,7 +11,11 @@ import com.google.ar.sceneform.math.Vector3;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static com.opentrack.jonasfuhrmann.opentrackplanner.VectorHelper.floatToVec;
 import static com.opentrack.jonasfuhrmann.opentrackplanner.VectorHelper.quatToFloat;
@@ -37,12 +41,26 @@ public class CurrentTrackNode extends TrackNode {
 
         Collection<Plane> planeList = mSession.getAllTrackables(Plane.class);
 
-        for (Plane plane : planeList) {
+        Map<Float, Vector3> intersectionMap = new HashMap<>();
+        for(Plane plane : planeList) {
             float[] intersection = getIntersection(plane);
             if (intersection != null) {
-                setWorldPosition(floatToVec(intersection));
-                break;
+                Vector3 intersectVec = floatToVec(intersection);
+                Vector3 camPosition = getScene().getCamera().getWorldPosition();
+                intersectionMap.put(Vector3.subtract(intersectVec, camPosition).length(), intersectVec);
             }
+        }
+
+        Set<Float> keys = intersectionMap.keySet();
+        if(!keys.isEmpty()) {
+            float nearest = Float.MAX_VALUE;
+            for (float length : keys) {
+                if (length < nearest) {
+                    nearest = length;
+                }
+            }
+
+            setWorldPosition(intersectionMap.get(nearest));
         }
 
         for(Node edge : getChildren()) {

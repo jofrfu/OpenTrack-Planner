@@ -11,11 +11,15 @@ import android.widget.Toast;
 
 import com.google.ar.core.TrackingState;
 import com.google.ar.sceneform.FrameTime;
+import com.google.ar.sceneform.rendering.Texture;
 import com.google.ar.sceneform.ux.ArFragment;
 import com.opentrack.jonasfuhrmann.opentrackplanner.Track.CurrentTrackNode;
 import com.opentrack.jonasfuhrmann.opentrackplanner.Track.TrackLoader;
 import com.opentrack.jonasfuhrmann.opentrackplanner.Track.TrackNode;
 import com.opentrack.jonasfuhrmann.opentrackplanner.Track.TrackType;
+
+import static com.google.ar.sceneform.rendering.PlaneRenderer.MATERIAL_TEXTURE;
+import static com.google.ar.sceneform.rendering.PlaneRenderer.MATERIAL_UV_SCALE;
 
 
 public class PlannerScene extends AppCompatActivity {
@@ -24,6 +28,8 @@ public class PlannerScene extends AppCompatActivity {
 
     private ArFragment arFragment;
     private CurrentTrackNode currentTrackNode;
+
+    private TrackType currentType;
 
     @Override
     @SuppressWarnings({"AndroidApiChecker", "FutureReturnValueIgnored"})
@@ -46,12 +52,17 @@ public class PlannerScene extends AppCompatActivity {
             }
         });
 
+        currentType = TrackType.STRAIGHT;
+
         FloatingActionButton chooseButton = findViewById(R.id.chooseButton);
         chooseButton.setOnClickListener(v -> {
             if(currentTrackNode != null) {
-                currentTrackNode.changeTrackType(TrackType.STRAIGHT);
+                currentTrackNode.changeTrackType(currentType);
+                currentType = TrackType.values()[(currentType.ordinal()+1) % TrackType.values().length];
             }
         });
+
+        //setPlaneTexture("studs.png");
     }
 
     private void onSceneUpdate(FrameTime frameTime) {
@@ -70,6 +81,25 @@ public class PlannerScene extends AppCompatActivity {
                     new TrackLoader(this));
             currentTrackNode.setParent(arFragment.getArSceneView().getScene());
         }
+    }
+
+    private void setPlaneTexture(String texturePath) {
+        Texture.Sampler sampler = Texture.Sampler.builder()
+                .setMinFilter(Texture.Sampler.MinFilter.LINEAR)
+                .setMagFilter(Texture.Sampler.MagFilter.LINEAR)
+                .setWrapMode(Texture.Sampler.WrapMode.REPEAT)
+                .build();
+
+        Texture.builder().setSource(() -> getAssets().open(texturePath))
+                .setSampler(sampler)
+                .build().thenAccept((texture) -> arFragment.getArSceneView().getPlaneRenderer().getMaterial()
+                        .thenAccept((material) -> {
+                            material.setTexture(MATERIAL_TEXTURE, texture);
+                            material.setFloat(MATERIAL_UV_SCALE,10f);
+                        })).exceptionally(ex ->{
+                            Log.e(TAG, "Failed to read texture asset file.", ex);
+                            return null;
+                        });
     }
 
     /**
