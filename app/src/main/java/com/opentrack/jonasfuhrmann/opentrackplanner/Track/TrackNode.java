@@ -5,7 +5,6 @@ import com.google.ar.sceneform.math.Quaternion;
 import com.google.ar.sceneform.math.Vector3;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class TrackNode extends Node {

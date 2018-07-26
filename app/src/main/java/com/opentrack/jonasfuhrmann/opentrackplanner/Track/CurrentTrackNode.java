@@ -11,7 +11,6 @@ import com.google.ar.sceneform.math.Vector3;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,12 +26,14 @@ public class CurrentTrackNode extends TrackNode {
     private TrackLoader mTrackLoader;
     private TrackType trackType;
     private List<TrackLayoutNode> trackLayoutNodes;
+    private boolean connectionChecked;
 
     public CurrentTrackNode(Session session, TrackLoader trackLoader) {
         super();
         mSession = session;
         mTrackLoader = trackLoader;
         trackLayoutNodes = new ArrayList<>();
+        connectionChecked = false;
     }
 
     @Override
@@ -67,12 +68,22 @@ public class CurrentTrackNode extends TrackNode {
             for(TrackLayoutNode layout : trackLayoutNodes) {
                 Node collidingEdge = layout.checkConnection(edge);
                 if(collidingEdge != null) {
-                    Vector3 normal = Vector3.subtract(edge.getWorldPosition(), edge.getParent().getWorldPosition());
+                    Vector3 normal;
+                    if(!connectionChecked) {
+                        connectionChecked = true;
+                        normal = Vector3.subtract(edge.getWorldPosition(), edge.getParent().getWorldPosition());
+                        Vector3 collidingNormal = Vector3.subtract(collidingEdge.getParent().getWorldPosition(), collidingEdge.getWorldPosition());
+                        Quaternion rotation = Quaternion.rotationBetweenVectors(normal, collidingNormal);
+
+                        setWorldRotation(rotation);
+                    }
+                    normal = Vector3.subtract(edge.getWorldPosition(), edge.getParent().getWorldPosition());
                     setWorldPosition(Vector3.subtract(collidingEdge.getWorldPosition(), normal));
-                    break;
+                    return;
                 }
             }
         }
+        connectionChecked = false;
     }
 
     public void changeTrackType(TrackType type) {
