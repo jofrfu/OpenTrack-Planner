@@ -71,6 +71,7 @@ public class CurrentTrackNode extends TrackNode {
                     Vector3 normal;
                     if(!connectionChecked) {
                         connectionChecked = true;
+                        setWorldRotation(new Quaternion(0,0,0,1));
                         normal = Vector3.subtract(edge.getWorldPosition(), edge.getParent().getWorldPosition());
                         Vector3 collidingNormal = Vector3.subtract(collidingEdge.getParent().getWorldPosition(), collidingEdge.getWorldPosition());
                         Quaternion rotation = Quaternion.rotationBetweenVectors(normal, collidingNormal);

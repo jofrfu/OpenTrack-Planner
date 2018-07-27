@@ -2,6 +2,7 @@ package com.opentrack.jonasfuhrmann.opentrackplanner.Track;
 
 import com.google.ar.sceneform.AnchorNode;
 import com.google.ar.sceneform.Node;
+import com.google.ar.sceneform.math.Quaternion;
 import com.google.ar.sceneform.math.Vector3;
 
 import java.util.ArrayList;
@@ -29,8 +30,10 @@ public class TrackLayoutNode extends AnchorNode {
             for(Node edge2 : openEdges) {
                 if(TrackNode.checkConnection(edge1, edge2)) {
                     Vector3 localPoint = worldToLocalPoint(track.getWorldPosition());
+                    Quaternion rotation = track.getWorldRotation();
                     track.setParent(this);
                     track.setLocalPosition(localPoint);
+                    track.setWorldRotation(rotation);
                     trackList.add(track);
                     openEdges.addAll(nodes);
                     openEdges.remove(edge1);
