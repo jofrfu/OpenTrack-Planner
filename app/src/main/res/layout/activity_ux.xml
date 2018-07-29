@@ -21,18 +21,32 @@
         android:layout_height="match_parent">
 
         <android.support.design.widget.FloatingActionButton
+            android:id="@+id/rotateButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginBottom="16dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="96dp"
+            android:clickable="true"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/addButton"
+            app:layout_constraintStart_toStartOf="parent"
+            app:srcCompat="@android:drawable/ic_menu_rotate"
+            android:focusable="true" />
+
+        <android.support.design.widget.FloatingActionButton
             android:id="@+id/addButton"
             android:layout_width="64dp"
             android:layout_height="64dp"
             android:layout_marginBottom="16dp"
             android:layout_marginEnd="8dp"
-            android:layout_marginStart="160dp"
+            android:layout_marginStart="8dp"
             android:clickable="true"
             android:focusable="true"
             app:backgroundTint="@color/addButton"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/chooseButton"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/rotateButton"
             app:srcCompat="?android:attr/listChoiceIndicatorSingle" />
 
         <android.support.design.widget.FloatingActionButton
@@ -48,13 +62,6 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/addButton"
             app:srcCompat="?android:attr/listChoiceIndicatorMultiple" />
-
-        <android.support.constraint.Guideline
-            android:id="@+id/guideline"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            app:layout_constraintGuide_percent="0.5" />
 
     </android.support.constraint.ConstraintLayout>
 

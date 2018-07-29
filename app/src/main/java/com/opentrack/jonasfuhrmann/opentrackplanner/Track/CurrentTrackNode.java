@@ -26,14 +26,12 @@ public class CurrentTrackNode extends TrackNode {
     private TrackLoader mTrackLoader;
     private TrackType trackType;
     private List<TrackLayoutNode> trackLayoutNodes;
-    private boolean connectionChecked;
 
     public CurrentTrackNode(Session session, TrackLoader trackLoader) {
         super();
         mSession = session;
         mTrackLoader = trackLoader;
         trackLayoutNodes = new ArrayList<>();
-        connectionChecked = false;
     }
 
     @Override
@@ -68,23 +66,19 @@ public class CurrentTrackNode extends TrackNode {
             for(TrackLayoutNode layout : trackLayoutNodes) {
                 Node collidingEdge = layout.checkConnection(edge);
                 if(collidingEdge != null) {
-                    Vector3 normal;
-                    if(!connectionChecked) {
-                        connectionChecked = true;
-                        setWorldRotation(new Quaternion(0,0,0,1));
-                        normal = Vector3.subtract(edge.getWorldPosition(), edge.getParent().getWorldPosition());
-                        Vector3 collidingNormal = Vector3.subtract(collidingEdge.getParent().getWorldPosition(), collidingEdge.getWorldPosition());
-                        Quaternion rotation = Quaternion.rotationBetweenVectors(normal, collidingNormal);
+                    setWorldRotation(new Quaternion(0,0,0,1));
+                    Vector3 normal = Vector3.subtract(edge.getWorldPosition(), edge.getParent().getWorldPosition());
+                    Vector3 collidingNormal = Vector3.subtract(collidingEdge.getParent().getWorldPosition(), collidingEdge.getWorldPosition());
+                    Quaternion rotation = Quaternion.rotationBetweenVectors(normal, collidingNormal);
 
-                        setWorldRotation(rotation);
-                    }
+                    setWorldRotation(rotation);
+
                     normal = Vector3.subtract(edge.getWorldPosition(), edge.getParent().getWorldPosition());
                     setWorldPosition(Vector3.subtract(collidingEdge.getWorldPosition(), normal));
                     return;
                 }
             }
         }
-        connectionChecked = false;
     }
 
     public void changeTrackType(TrackType type) {
@@ -94,6 +88,8 @@ public class CurrentTrackNode extends TrackNode {
     }
 
     public void placeTrack() {
+        if(trackType == null) return;
+
         TrackNode trackNode = new TrackNode();
         trackNode.setWorldPosition(getWorldPosition());
         trackNode.setWorldRotation(getWorldRotation());
