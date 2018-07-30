@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.widget.Toast;
 
 import com.google.ar.core.TrackingState;
@@ -26,8 +27,6 @@ import static com.google.ar.sceneform.rendering.PlaneRenderer.MATERIAL_UV_SCALE;
 public class PlannerScene extends AppCompatActivity {
     private static final String TAG = PlannerScene.class.getSimpleName();
     private static final double MIN_OPENGL_VERSION = 3.1;
-
-    private static final float ROTATION_STEP = 10*2.0f*(float)Math.PI/360f;
 
     private ArFragment arFragment;
     private CurrentTrackNode currentTrackNode;
@@ -68,26 +67,11 @@ public class PlannerScene extends AppCompatActivity {
         FloatingActionButton rotateButton = findViewById(R.id.rotateButton);
         rotateButton.setOnClickListener(v -> {
             if(currentTrackNode != null) {
-                Vector3 currentLook = Quaternion.rotateVector(currentTrackNode.getWorldRotation(), Vector3.right());
-                float rad = degreeToRadiant(Vector3.angleBetweenVectors(Vector3.right(), currentLook));
-
-                rad += ROTATION_STEP;
-
-                if(rad >= Math.PI) {
-                    rad = (float)-Math.PI;
-                }
-
-                Vector3 newLook = new Vector3((float)Math.cos(rad), 0, (float)Math.sin(rad));
-                Quaternion rotation = Quaternion.rotationBetweenVectors(newLook, Vector3.right());
-                currentTrackNode.setWorldRotation(rotation);
+                currentTrackNode.rotate();
             }
         });
 
         //setPlaneTexture("studs.png");
-    }
-
-    private float degreeToRadiant(float degree) {
-        return (degree/360f)*2.0f*(float)Math.PI;
     }
 
     private void onSceneUpdate(FrameTime frameTime) {
@@ -122,7 +106,7 @@ public class PlannerScene extends AppCompatActivity {
                             material.setTexture(MATERIAL_TEXTURE, texture);
                             material.setFloat(MATERIAL_UV_SCALE,10f);
                         })).exceptionally(ex ->{
-                            Log.e(TAG, "Failed to read texture asset file.", ex);
+                            Log.e(TAG, "Failed to read texture asset file", ex);
                             return null;
                         });
     }

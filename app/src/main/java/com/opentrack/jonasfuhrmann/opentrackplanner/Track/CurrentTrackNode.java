@@ -22,6 +22,9 @@ import static com.opentrack.jonasfuhrmann.opentrackplanner.VectorHelper.vecToFlo
 
 public class CurrentTrackNode extends TrackNode {
 
+    private static final float ROTATION_STEP = 10*2.0f*(float)Math.PI/360f;
+    private float rad;
+
     private Session mSession;
     private TrackLoader mTrackLoader;
     private TrackType trackType;
@@ -32,6 +35,24 @@ public class CurrentTrackNode extends TrackNode {
         mSession = session;
         mTrackLoader = trackLoader;
         trackLayoutNodes = new ArrayList<>();
+        resetRotation();
+    }
+
+    private void resetRotation() {
+        Vector3 currentLook = Quaternion.rotateVector(getWorldRotation(), Vector3.right());
+        rad = (float)Math.acos(Vector3.dot(Vector3.right(), currentLook));
+    }
+
+    public void rotate() {
+        rad += ROTATION_STEP;
+
+        if(rad >= 2.0f*Math.PI) {
+            rad -= 2.0f*Math.PI;
+        }
+
+        Vector3 newLook = new Vector3((float)Math.cos(rad), 0, (float)Math.sin(rad));
+        Quaternion rotation = Quaternion.rotationBetweenVectors(newLook, Vector3.right());
+        setWorldRotation(rotation);
     }
 
     @Override
@@ -72,6 +93,7 @@ public class CurrentTrackNode extends TrackNode {
                     Quaternion rotation = Quaternion.rotationBetweenVectors(normal, collidingNormal);
 
                     setWorldRotation(rotation);
+                    resetRotation();
 
                     normal = Vector3.subtract(edge.getWorldPosition(), edge.getParent().getWorldPosition());
                     setWorldPosition(Vector3.subtract(collidingEdge.getWorldPosition(), normal));
