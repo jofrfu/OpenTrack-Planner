@@ -8,13 +8,17 @@ import com.google.ar.sceneform.math.Vector3;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.opentrack.jonasfuhrmann.opentrackplanner.VectorHelper.almostEquals;
+
 public class TrackLayoutNode extends AnchorNode {
     private List<TrackNode> trackList;
+    private List<Node> controlPoints;
     private List<Node> openEdges;
 
     public TrackLayoutNode() {
         trackList = new ArrayList<>();
         openEdges = new ArrayList<>();
+        controlPoints = new ArrayList<>();
     }
 
     public TrackLayoutNode(TrackNode track) {
@@ -22,6 +26,7 @@ public class TrackLayoutNode extends AnchorNode {
         addChild(track);
         trackList.add(track);
         openEdges.addAll(track.getChildren());
+        addControlPoint(track);
     }
 
     public boolean connect(TrackNode track) {
@@ -38,11 +43,39 @@ public class TrackLayoutNode extends AnchorNode {
                     openEdges.addAll(nodes);
                     openEdges.remove(edge1);
                     openEdges.remove(edge2);
+                    addControlPoint(track); // for hermite curve
                     return true;
                 }
             }
         }
         return false;
+    }
+
+    private void addControlPoint(TrackNode track) {
+        for(int i = 0; i < controlPoints.size(); i++) {
+            for(Node edge : track.getChildren()) {
+                if(almostEquals(controlPoints.get(i).getWorldPosition(), edge.getWorldPosition())) {
+                    List<Node> excluded = new ArrayList<>(track.getChildren());
+                    excluded.remove(edge);
+                    if(i == 0 || i == controlPoints.size()-1) {
+                        for(Node control : excluded) {
+                            Node node = new Node();
+                            node.setParent(this);
+                            node.setWorldPosition(control.getWorldPosition());
+                            controlPoints.add(i, node);
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+
+        for(Node control : track.getChildren()) {
+            Node node = new Node();
+            node.setParent(this);
+            node.setWorldPosition(control.getWorldPosition());
+            controlPoints.add(node);
+        }
     }
 
     public Node checkConnection(Node edge) {
@@ -52,5 +85,49 @@ public class TrackLayoutNode extends AnchorNode {
             }
         }
         return null;
+    }
+
+    public Vector3 evaluateHermite(double t) {
+        if(t < 0 || t > 1.0) {
+            throw new IllegalArgumentException("Hermite curve can only be evaluated between 0 and 1!");
+        }
+
+        int size = controlPoints.size();
+
+        double delta = 1.0 / size;
+        int index = (int)(t / delta);
+        double tLocal = (t - index * delta) / delta;
+
+        Vector3 control0 = controlPoints.get(index % size).getWorldPosition();
+        Vector3 control1 = controlPoints.get((index+1) % size).getWorldPosition();
+
+        Vector3 tangent0 = getControlTangent(index);
+        Vector3 tangent1 = getControlTangent(index + 1);
+
+        double H0 = (1.0-tLocal)*(1.0-tLocal)*(1.0+2.0*tLocal);
+        double H1 = tLocal*(1.0-tLocal)*(1.0-tLocal);
+        double H2 = -tLocal*tLocal*(1.0-tLocal);
+        double H3 = (3.0-2.0*tLocal)*tLocal*tLocal;
+
+        return Vector3.add(
+                Vector3.add(
+                        Vector3.add(
+                                control0.scaled((float)H0),
+                                tangent0.scaled((float)H1)),
+                        tangent1.scaled((float)H2)),
+                control1.scaled((float)H3)
+        );
+    }
+
+    private Vector3 getControlTangent(int index) {
+        int size = controlPoints.size();
+        Vector3 control0 = controlPoints.get((index+1) % size).getWorldPosition();
+        Vector3 control1 = controlPoints.get((index-1) < 0 ? (size-1) : (index-1)).getWorldPosition();
+
+        Vector3 tangent = Vector3.subtract(control0, control1);
+
+        tangent.normalized();
+
+        return tangent;
     }
 }

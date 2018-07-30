@@ -1,5 +1,6 @@
 package com.opentrack.jonasfuhrmann.opentrackplanner;
 
+import com.google.ar.sceneform.math.MathHelper;
 import com.google.ar.sceneform.math.Quaternion;
 import com.google.ar.sceneform.math.Vector3;
 
@@ -27,5 +28,11 @@ public class VectorHelper {
 
     public static float[] quatToFloat(Quaternion quaternion) {
         return new float[]{quaternion.x, quaternion.y, quaternion.z, quaternion.w};
+    }
+
+    public static boolean almostEquals(Vector3 vector3, Vector3 vector31) {
+        return  MathHelper.almostEqualRelativeAndAbs(vector3.x, vector31.x) &&
+                MathHelper.almostEqualRelativeAndAbs(vector3.y, vector31.y) &&
+                MathHelper.almostEqualRelativeAndAbs(vector3.z, vector31.z);
     }
 }

@@ -7,13 +7,10 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.widget.Toast;
 
 import com.google.ar.core.TrackingState;
 import com.google.ar.sceneform.FrameTime;
-import com.google.ar.sceneform.math.Quaternion;
-import com.google.ar.sceneform.math.Vector3;
 import com.google.ar.sceneform.rendering.Texture;
 import com.google.ar.sceneform.ux.ArFragment;
 import com.opentrack.jonasfuhrmann.opentrackplanner.Track.CurrentTrackNode;
@@ -68,6 +65,13 @@ public class PlannerScene extends AppCompatActivity {
         rotateButton.setOnClickListener(v -> {
             if(currentTrackNode != null) {
                 currentTrackNode.rotate();
+            }
+        });
+
+        FloatingActionButton playButton = findViewById(R.id.playButton);
+        playButton.setOnClickListener(v -> {
+            if(currentTrackNode != null) {
+                currentTrackNode.simulateTrain();
             }
         });
 

@@ -63,6 +63,18 @@
             app:layout_constraintStart_toEndOf="@+id/addButton"
             app:srcCompat="?android:attr/listChoiceIndicatorMultiple" />
 
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/playButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginBottom="16dp"
+            android:layout_marginStart="16dp"
+            android:clickable="true"
+            android:focusable="true"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/chooseButton"
+            app:srcCompat="@android:drawable/ic_media_play" />
+
     </android.support.constraint.ConstraintLayout>
 
 </FrameLayout>

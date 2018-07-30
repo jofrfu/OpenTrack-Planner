@@ -8,6 +8,10 @@ import com.google.ar.sceneform.FrameTime;
 import com.google.ar.sceneform.Node;
 import com.google.ar.sceneform.math.Quaternion;
 import com.google.ar.sceneform.math.Vector3;
+import com.google.ar.sceneform.rendering.Material;
+import com.google.ar.sceneform.rendering.MaterialFactory;
+import com.google.ar.sceneform.rendering.ModelRenderable;
+import com.google.ar.sceneform.rendering.ShapeFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,19 +26,28 @@ import static com.opentrack.jonasfuhrmann.opentrackplanner.VectorHelper.vecToFlo
 
 public class CurrentTrackNode extends TrackNode {
 
-    private static final float ROTATION_STEP = 10*2.0f*(float)Math.PI/360f;
+    private static final float ROTATION_STEP = 10*2.0f*(float)Math.PI/360.0f;
     private float rad;
+
+    private static final double SIMULATION_STEP = 0.001;
 
     private Session mSession;
     private TrackLoader mTrackLoader;
     private TrackType trackType;
     private List<TrackLayoutNode> trackLayoutNodes;
 
+    private boolean simulationRunning;
+    private double currentStep;
+
+    private Node trainNode;
+
     public CurrentTrackNode(Session session, TrackLoader trackLoader) {
         super();
         mSession = session;
         mTrackLoader = trackLoader;
         trackLayoutNodes = new ArrayList<>();
+        simulationRunning = false;
+        currentStep = 0;
         resetRotation();
     }
 
@@ -55,19 +68,45 @@ public class CurrentTrackNode extends TrackNode {
         setWorldRotation(rotation);
     }
 
+    public void simulateTrain() {
+        if(trainNode == null) {
+            ModelRenderable train = ShapeFactory.makeSphere(0.05f, Vector3.zero(), getRenderable().getMaterial());
+            trainNode = new Node();
+            trainNode.setParent(getScene());
+            trainNode.setRenderable(train);
+        }
+
+        if(!simulationRunning) {
+            simulationRunning = true;
+            currentStep = 0;
+        }
+    }
+
     @Override
     public void onUpdate(FrameTime frameTime) {
         super.onUpdate(frameTime);
+
+        if(simulationRunning) {
+            for(TrackLayoutNode node : trackLayoutNodes) {
+                Vector3 position = node.evaluateHermite(currentStep);
+                currentStep += SIMULATION_STEP;
+
+                if(currentStep >= 1.0) {
+                    simulationRunning = false;
+                }
+
+                trainNode.setWorldPosition(position);
+            }
+        }
 
         Collection<Plane> planeList = mSession.getAllTrackables(Plane.class);
 
         Map<Float, Vector3> intersectionMap = new HashMap<>();
         for(Plane plane : planeList) {
-            float[] intersection = getIntersection(plane);
+            Vector3 intersection = getIntersection(plane);
             if (intersection != null) {
-                Vector3 intersectVec = floatToVec(intersection);
                 Vector3 camPosition = getScene().getCamera().getWorldPosition();
-                intersectionMap.put(Vector3.subtract(intersectVec, camPosition).length(), intersectVec);
+                intersectionMap.put(Vector3.subtract(intersection, camPosition).length(), intersection);
             }
         }
 
@@ -152,7 +191,7 @@ public class CurrentTrackNode extends TrackNode {
         }
     }
 
-    private float[] getIntersection(Plane plane) {
+    private Vector3 getIntersection(Plane plane) {
         Camera camera = getScene().getCamera();
 
         Pose center = plane.getCenterPose();
@@ -173,9 +212,9 @@ public class CurrentTrackNode extends TrackNode {
         float t = -Vector3.dot(normal, Vector3.subtract(cameraPosition, floatToVec(centerPoint)))
                 / Vector3.dot(normal, cameraDirection);
 
-        float intersection[] = vecToFloat(Vector3.add(cameraPosition, cameraDirection.scaled(t)));
+        Vector3 intersection = Vector3.add(cameraPosition, cameraDirection.scaled(t));
 
-        Pose checkPose = new Pose(intersection, new float[]{0, 0, 0, 1});
+        Pose checkPose = new Pose(vecToFloat(intersection), new float[]{0, 0, 0, 1});
         if(!plane.isPoseInExtents(checkPose)) {
             return null;
         }
