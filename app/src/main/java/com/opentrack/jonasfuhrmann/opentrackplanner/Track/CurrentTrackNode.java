@@ -91,11 +91,13 @@ public class CurrentTrackNode extends TrackNode {
                 Vector3 position = node.evaluateHermite(currentStep);
                 currentStep += SIMULATION_STEP;
 
-                if(currentStep >= 1.0) {
+                if(currentStep >= 1.0 || position == null) {
                     simulationRunning = false;
                 }
 
-                trainNode.setWorldPosition(position);
+                if(position != null) {
+                    trainNode.setWorldPosition(position);
+                }
             }
         }
 

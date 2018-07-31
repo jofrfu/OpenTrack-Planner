@@ -87,11 +87,18 @@ public class TrackLayoutNode extends AnchorNode {
         int index = (int)(t / delta);
         double tLocal = (t - index * delta) / delta;
 
-        Vector3 control0 = controlPoints.get(index % size).getWorldPosition();
-        Vector3 control1 = controlPoints.get((index+1) % size).getWorldPosition();
+        if(index+1 >= size) {
+            return null;
+        }
 
-        Vector3 tangent0 = getControlTangent(index);
-        Vector3 tangent1 = getControlTangent(index + 1);
+        Node controlNode0 = controlPoints.get(index);
+        Node controlNode1 = controlPoints.get(index+1);
+
+        Vector3 control0 = controlNode0.getWorldPosition();
+        Vector3 control1 = controlNode1.getWorldPosition();
+
+        Vector3 tangent0 = getControlTangent(controlNode0);
+        Vector3 tangent1 = getControlTangent(controlNode1);
 
         double H0 = (1.0-tLocal)*(1.0-tLocal)*(1.0+2.0*tLocal);
         double H1 = tLocal*(1.0-tLocal)*(1.0-tLocal);
@@ -108,12 +115,10 @@ public class TrackLayoutNode extends AnchorNode {
         );
     }
 
-    private Vector3 getControlTangent(int index) {
-        int size = controlPoints.size();
-        Vector3 control0 = controlPoints.get((index+1) % size).getWorldPosition();
-        Vector3 control1 = controlPoints.get((index-1) < 0 ? (size-1) : (index-1)).getWorldPosition();
+    private Vector3 getControlTangent(Node controlNode) {
+        Node parent = controlNode.getParent();
 
-        Vector3 tangent = Vector3.subtract(control0, control1);
+        Vector3 tangent = Vector3.subtract(controlNode.getWorldPosition(), parent.getWorldPosition());
 
         tangent.normalized();
 
