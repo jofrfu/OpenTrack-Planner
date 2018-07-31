@@ -26,7 +26,7 @@ public class TrackLayoutNode extends AnchorNode {
         addChild(track);
         trackList.add(track);
         openEdges.addAll(track.getChildren());
-        addControlPoint(track);
+        controlPoints.addAll(track.getChildren());
     }
 
     public boolean connect(TrackNode track) {
@@ -43,7 +43,7 @@ public class TrackLayoutNode extends AnchorNode {
                     openEdges.addAll(nodes);
                     openEdges.remove(edge1);
                     openEdges.remove(edge2);
-                    addControlPoint(track); // for hermite curve
+                    addControlPoint(edge1); // for hermite curve
                     return true;
                 }
             }
@@ -51,30 +51,19 @@ public class TrackLayoutNode extends AnchorNode {
         return false;
     }
 
-    private void addControlPoint(TrackNode track) {
-        for(int i = 0; i < controlPoints.size(); i++) {
-            for(Node edge : track.getChildren()) {
-                if(almostEquals(controlPoints.get(i).getWorldPosition(), edge.getWorldPosition())) {
-                    List<Node> excluded = new ArrayList<>(track.getChildren());
-                    excluded.remove(edge);
-                    if(i == 0 || i == controlPoints.size()-1) {
-                        for(Node control : excluded) {
-                            Node node = new Node();
-                            node.setParent(this);
-                            node.setWorldPosition(control.getWorldPosition());
-                            controlPoints.add(i, node);
-                            return;
-                        }
-                    }
-                }
-            }
-        }
+    private void addControlPoint(Node edge) {
+        if(!controlPoints.isEmpty()) {
+            Node parent = edge.getParent();
+            List<Node> excluded = new ArrayList<>(parent.getChildren());
+            excluded.remove(edge);
 
-        for(Node control : track.getChildren()) {
-            Node node = new Node();
-            node.setParent(this);
-            node.setWorldPosition(control.getWorldPosition());
-            controlPoints.add(node);
+            if (TrackNode.checkConnection(controlPoints.get(0), edge)) {
+                for (Node temp : excluded) {
+                    controlPoints.add(0, temp);
+                }
+            } else if (TrackNode.checkConnection(controlPoints.get(controlPoints.size() - 1), edge)) {
+                controlPoints.addAll(excluded);
+            }
         }
     }
 
