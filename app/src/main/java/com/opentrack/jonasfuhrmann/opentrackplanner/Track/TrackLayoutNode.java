@@ -170,14 +170,12 @@ public class TrackLayoutNode extends AnchorNode {
         double H2 = -tLocal*tLocal*(1.0-tLocal);
         double H3 = (3.0-2.0*tLocal)*tLocal*tLocal;
 
-        return Vector3.add(
-                Vector3.add(
-                        Vector3.add(
-                                control0.scaled((float)H0),
-                                tangent0.scaled((float)H1)),
-                        tangent1.scaled((float)H2)),
-                control1.scaled((float)H3)
-        );
+        Vector3 c0xH0 = control0.scaled((float)H0);
+        Vector3 t0xH1 = tangent0.scaled((float)H1);
+        Vector3 t1xH2 = tangent1.scaled((float)H2);
+        Vector3 c1xH3 = control1.scaled((float)H3);
+
+        return Vector3.add(Vector3.add(Vector3.add(c0xH0, t0xH1), t1xH2), c1xH3);
     }
 
     /**
