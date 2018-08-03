@@ -189,7 +189,7 @@ public class CurrentTrackNode extends TrackNode {
     public void changeTrackType(TrackType type) {
         trackType = type;
         setRenderable(mTrackLoader.createRenderable(trackType));
-        setNormalOrigins(getLocalEdges(type));
+        setDirectionOrigins(getLocalEdges(type));
     }
 
     /**
@@ -202,7 +202,7 @@ public class CurrentTrackNode extends TrackNode {
         TrackNode trackNode = new TrackNode();
         trackNode.setWorldPosition(getWorldPosition());
         trackNode.setWorldRotation(getWorldRotation());
-        trackNode.setNormalOrigins(getLocalEdges(trackType));
+        trackNode.setDirectionOrigins(getLocalEdges(trackType));
         trackNode.setRenderable(getRenderable());
 
         for(TrackLayoutNode layoutNode : trackLayoutNodes) {
