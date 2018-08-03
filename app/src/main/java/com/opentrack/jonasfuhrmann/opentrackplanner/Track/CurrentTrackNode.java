@@ -8,8 +8,6 @@ import com.google.ar.sceneform.FrameTime;
 import com.google.ar.sceneform.Node;
 import com.google.ar.sceneform.math.Quaternion;
 import com.google.ar.sceneform.math.Vector3;
-import com.google.ar.sceneform.rendering.Material;
-import com.google.ar.sceneform.rendering.MaterialFactory;
 import com.google.ar.sceneform.rendering.ModelRenderable;
 import com.google.ar.sceneform.rendering.ShapeFactory;
 
@@ -24,9 +22,14 @@ import static com.opentrack.jonasfuhrmann.opentrackplanner.VectorHelper.floatToV
 import static com.opentrack.jonasfuhrmann.opentrackplanner.VectorHelper.quatToFloat;
 import static com.opentrack.jonasfuhrmann.opentrackplanner.VectorHelper.vecToFloat;
 
+/**
+ * This class creates a track, which is placeable in space.
+ * A {@link CurrentTrackNode} creates and holds {@link TrackLayoutNode}s and can assign tracks to each one.
+ */
 public class CurrentTrackNode extends TrackNode {
 
     private static final float ROTATION_STEP = 10*2.0f*(float)Math.PI/360.0f;
+    // Current angle in radiant
     private float rad;
 
     private static final double SIMULATION_STEP = 0.01;
@@ -40,8 +43,14 @@ public class CurrentTrackNode extends TrackNode {
     private boolean simulationRunning;
     private double currentStep;
 
+    // The simulated train
     private Node trainNode;
 
+    /**
+     * Creates a new {@link CurrentTrackNode}.
+     * @param session The ARCore {@link Session} for interaction purposes
+     * @param trackLoader For {@link com.google.ar.sceneform.rendering.Renderable} creation
+     */
     public CurrentTrackNode(Session session, TrackLoader trackLoader) {
         super();
         mSession = session;
@@ -57,6 +66,9 @@ public class CurrentTrackNode extends TrackNode {
         rad = (float)Math.acos(Vector3.dot(Vector3.right(), currentLook));
     }
 
+    /**
+     * Rotates the {@link CurrentTrackNode} by 10 degrees clockwise on the current plane.
+     */
     public void rotate() {
         rad += ROTATION_STEP;
 
@@ -69,6 +81,10 @@ public class CurrentTrackNode extends TrackNode {
         setWorldRotation(rotation);
     }
 
+    /**
+     * Creates a {@link Node}, which simulates a train.
+     * Simulation will start, if this method is called.
+     */
     public void simulateTrain() {
         if(trainNode == null) {
             ModelRenderable train = ShapeFactory.makeCube(Vector3.one().scaled(0.05f), Vector3.zero(), getRenderable().getMaterial());
@@ -87,6 +103,11 @@ public class CurrentTrackNode extends TrackNode {
         }
     }
 
+    /**
+     * Overridden for animation purposes.
+     * All animations are calculated here.
+     * @param frameTime Default parameter
+     */
     @Override
     public void onUpdate(FrameTime frameTime) {
         super.onUpdate(frameTime);
@@ -161,12 +182,20 @@ public class CurrentTrackNode extends TrackNode {
         }
     }
 
+    /**
+     * Changes the internal {@link TrackType} state and renders the corresponding track.
+     * @param type The {@link TrackType} to be rendered.
+     */
     public void changeTrackType(TrackType type) {
         trackType = type;
         setRenderable(mTrackLoader.createRenderable(trackType));
         setNormalOrigins(getLocalEdges(type));
     }
 
+    /**
+     * Places a copy of the current track {@link com.google.ar.sceneform.rendering.Renderable} in space.
+     * Adds the created {@link TrackNode} to the corresponding {@link TrackLayoutNode}.
+     */
     public void placeTrack() {
         if(trackType == null) return;
 
@@ -188,6 +217,10 @@ public class CurrentTrackNode extends TrackNode {
         createLayout(trackNode);
     }
 
+    /**
+     * Creates a new {@link TrackLayoutNode} and adds it to the list.
+     * @param track The initial {@link TrackNode}
+     */
     private void createLayout(TrackNode track) {
         TrackLayoutNode layoutNode = new TrackLayoutNode(track);
 
@@ -210,6 +243,11 @@ public class CurrentTrackNode extends TrackNode {
         }
     }
 
+    /**
+     * Calculates the intersection of the {@link Camera} direction with a {@link Plane}.
+     * @param plane The {@link Plane} to be checked
+     * @return The intersection point, if any, null otherwise
+     */
     private Vector3 getIntersection(Plane plane) {
         Camera camera = getScene().getCamera();
 
