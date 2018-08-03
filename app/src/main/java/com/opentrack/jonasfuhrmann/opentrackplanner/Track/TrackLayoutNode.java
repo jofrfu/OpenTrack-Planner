@@ -74,7 +74,7 @@ public class TrackLayoutNode extends AnchorNode {
                         }
                     }
                 }
-            } else if(i > 0) {
+            } else if(i == trackList.size()-1) {
                 TrackNode currentNode = trackList.get(i);
                 TrackNode prevNode = trackList.get(i-1);
 
@@ -105,7 +105,7 @@ public class TrackLayoutNode extends AnchorNode {
 
     public Vector3 evaluateHermite(double t) {
         if(t < 0 || t > 1.0) {
-            throw new IllegalArgumentException("Hermite curve can only be evaluated between 0 and 1!");
+            return null;
         }
 
         int size = controlPoints.size();

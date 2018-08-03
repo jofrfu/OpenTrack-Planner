@@ -30,6 +30,7 @@ public class CurrentTrackNode extends TrackNode {
     private float rad;
 
     private static final double SIMULATION_STEP = 0.01;
+    private static final double TANGENT_STEP = 0.001;
 
     private Session mSession;
     private TrackLoader mTrackLoader;
@@ -70,7 +71,7 @@ public class CurrentTrackNode extends TrackNode {
 
     public void simulateTrain() {
         if(trainNode == null) {
-            ModelRenderable train = ShapeFactory.makeSphere(0.05f, Vector3.zero(), getRenderable().getMaterial());
+            ModelRenderable train = ShapeFactory.makeCube(Vector3.one().scaled(0.05f), Vector3.zero(), getRenderable().getMaterial());
             trainNode = new Node();
             trainNode.setParent(getScene());
             trainNode.setRenderable(train);
@@ -92,6 +93,8 @@ public class CurrentTrackNode extends TrackNode {
         if(simulationRunning) {
             for(TrackLayoutNode node : trackLayoutNodes) {
                 Vector3 position = node.evaluateHermite(currentStep);
+                Vector3 stepBefore = node.evaluateHermite(currentStep - TANGENT_STEP);
+                Vector3 stepAfter = node.evaluateHermite(currentStep + TANGENT_STEP);
                 currentStep += SIMULATION_STEP;
 
                 if(currentStep >= 1.0 || position == null) {
@@ -100,7 +103,13 @@ public class CurrentTrackNode extends TrackNode {
 
                 if(position != null) {
                     Vector3 up = node.localToWorldDirection(Vector3.up());
-                    trainNode.setWorldPosition(Vector3.add(position, up.scaled(0.06f)));
+                    trainNode.setWorldPosition(Vector3.add(position, up.scaled(0.05f)));
+
+                    if(stepBefore != null && stepAfter != null) {
+                        Vector3 direction = Vector3.subtract(stepAfter, stepBefore);
+                        Quaternion rotation = Quaternion.lookRotation(direction, node.localToWorldDirection(Vector3.up()));
+                        trainNode.setWorldRotation(rotation);
+                    }
                 }
             }
         }
@@ -132,7 +141,7 @@ public class CurrentTrackNode extends TrackNode {
             for(TrackLayoutNode layout : trackLayoutNodes) {
                 Node collidingEdge = layout.checkConnection(edge);
                 if(collidingEdge != null) {
-                    setWorldRotation(new Quaternion(0,0,0,1));
+                    setWorldRotation(Quaternion.identity());
                     Vector3 normal = Vector3.subtract(edge.getWorldPosition(), edge.getParent().getWorldPosition());
                     Vector3 collidingNormal = Vector3.subtract(collidingEdge.getParent().getWorldPosition(), collidingEdge.getWorldPosition());
                     Quaternion rotation = Quaternion.rotationBetweenVectors(normal, collidingNormal);
@@ -170,8 +179,8 @@ public class CurrentTrackNode extends TrackNode {
             }
         }
 
-        trackNode.setWorldPosition(new Vector3(0,0,0));
-        trackNode.setWorldRotation(new Quaternion(0,0,0,1));
+        trackNode.setWorldPosition(Vector3.zero());
+        trackNode.setWorldRotation(Quaternion.identity());
         createLayout(trackNode);
     }
 
