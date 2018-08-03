@@ -20,7 +20,10 @@ import com.opentrack.jonasfuhrmann.opentrackplanner.Track.TrackType;
 import static com.google.ar.sceneform.rendering.PlaneRenderer.MATERIAL_TEXTURE;
 import static com.google.ar.sceneform.rendering.PlaneRenderer.MATERIAL_UV_SCALE;
 
-
+/**
+ * The main activity.
+ * This activity contains the UI elements and the SceneForm fragment.
+ */
 public class PlannerScene extends AppCompatActivity {
     private static final String TAG = PlannerScene.class.getSimpleName();
     private static final double MIN_OPENGL_VERSION = 3.1;
@@ -30,6 +33,10 @@ public class PlannerScene extends AppCompatActivity {
 
     private TrackType currentType;
 
+    /**
+     * Creates all buttons and the {@link ArFragment}.
+     * @param savedInstanceState
+     */
     @Override
     @SuppressWarnings({"AndroidApiChecker", "FutureReturnValueIgnored"})
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,6 +85,10 @@ public class PlannerScene extends AppCompatActivity {
         //setPlaneTexture("studs.png");
     }
 
+    /**
+     * Used to initialize the {@link CurrentTrackNode} and add it to the scenegraph.
+     * @param frameTime Default parameter
+     */
     private void onSceneUpdate(FrameTime frameTime) {
         arFragment.onUpdate(frameTime);
 
@@ -96,6 +107,10 @@ public class PlannerScene extends AppCompatActivity {
         }
     }
 
+    /**
+     * Sets a texture, which is used to visualize planes.
+     * @param texturePath The path of the texture file
+     */
     private void setPlaneTexture(String texturePath) {
         Texture.Sampler sampler = Texture.Sampler.builder()
                 .setMinFilter(Texture.Sampler.MinFilter.LINEAR)
@@ -116,12 +131,12 @@ public class PlannerScene extends AppCompatActivity {
     }
 
     /**
-     * Returns false and displays an error message if Sceneform can not run, true if Sceneform can run
+     * Returns false and displays an error message if SceneForm can not run, true if SceneForm can run
      * on this device.
      *
-     * <p>Sceneform requires Android N on the device as well as OpenGL 3.1 capabilities.
+     * <p>SceneForm requires Android N on the device as well as OpenGL 3.1 capabilities.
      *
-     * <p>Finishes the activity if Sceneform can not run
+     * <p>Finishes the activity if SceneForm can not run
      */
     public static boolean checkIsSupportedDeviceOrFinish(final Activity activity) {
         String openGlVersionString =

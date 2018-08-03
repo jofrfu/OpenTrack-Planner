@@ -119,7 +119,7 @@ public class CurrentTrackNode extends TrackNode {
             Vector3 stepAfter = node.evaluateHermite(currentStep + TANGENT_STEP);
             currentStep += SIMULATION_STEP;
 
-            if(currentStep >= 1.0 || position == null) {
+            if(currentStep >= 1.0) {
                 simulationRunning = false;
             }
 

@@ -4,28 +4,42 @@ import com.google.ar.sceneform.AnchorNode;
 import com.google.ar.sceneform.Node;
 import com.google.ar.sceneform.math.Quaternion;
 import com.google.ar.sceneform.math.Vector3;
+import com.google.ar.sceneform.rendering.ModelRenderable;
+import com.google.ar.sceneform.rendering.ShapeFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This class holds all corresponding {@link TrackNode}s and can create a spline across all of them.
+ */
 public class TrackLayoutNode extends AnchorNode {
     private List<TrackNode> trackList;
     private List<Node> controlPoints;
     private List<Node> openEdges;
 
-    public TrackLayoutNode() {
+    private ModelRenderable ball;
+
+    /**
+     * Creates a new {@link TrackLayoutNode}.
+     * @param track Consists of at least one {@link TrackNode}
+     */
+    public TrackLayoutNode(TrackNode track) {
         trackList = new ArrayList<>();
         openEdges = new ArrayList<>();
         controlPoints = new ArrayList<>();
-    }
-
-    public TrackLayoutNode(TrackNode track) {
-        this();
         addChild(track);
         trackList.add(track);
         openEdges.addAll(track.getChildren());
+        ball = ShapeFactory.makeSphere(0.01f, Vector3.zero(), track.getRenderable().getMaterial());
     }
 
+    /**
+     * Tries to connect a {@link TrackNode} to this {@link TrackLayoutNode}.
+     * The {@link TrackNode} is saved on success.
+     * @param track The track to be connected
+     * @return True, if the connection was successful
+     */
     public boolean connect(TrackNode track) {
         List<Node> nodes = track.getChildren();
         for(Node edge1 : nodes) {
@@ -54,7 +68,13 @@ public class TrackLayoutNode extends AnchorNode {
         return false;
     }
 
+    /**
+     * Creates control points from all tracks of this {@link TrackLayoutNode} for the hermite spline.
+     */
     public void createControlPoints() {
+        for(Node node : controlPoints) {
+            node.setRenderable(null);
+        }
         controlPoints.clear();
 
         for(int i = 0; i < trackList.size(); i++) {
@@ -94,8 +114,17 @@ public class TrackLayoutNode extends AnchorNode {
                 controlPoints.addAll(openEnds);
             }
         }
+
+        for(Node node : controlPoints) {
+            node.setRenderable(ball);
+        }
     }
 
+    /**
+     * Checks the connection from an edge to the open edges of this {@link TrackLayoutNode}.
+     * @param edge The edge to be checked
+     * @return The edge, which the checked edge is connected to.
+     */
     public Node checkConnection(Node edge) {
         for (Node edge1 : openEdges) {
             if (TrackNode.checkConnection(edge, edge1)) {
@@ -105,6 +134,13 @@ public class TrackLayoutNode extends AnchorNode {
         return null;
     }
 
+    // TODO: Fix hermite spline
+
+    /**
+     * Evaluates the hermite spline, which is constructed by {@link #createControlPoints()}.
+     * @param t The desired point on the spline, can only be between 0 and 1
+     * @return The position on the spline, if any, null otherwise
+     */
     public Vector3 evaluateHermite(double t) {
         if(t < 0 || t > 1.0) {
             return null;
@@ -144,13 +180,16 @@ public class TrackLayoutNode extends AnchorNode {
         );
     }
 
+    /**
+     * Gets the tangent of a node, for the hermite spline.
+     * @param controlNode The current node which is one control point
+     * @return The normalized tangent
+     */
     private Vector3 getControlTangent(Node controlNode) {
         Node parent = controlNode.getParent();
 
         Vector3 tangent = Vector3.subtract(controlNode.getWorldPosition(), parent.getWorldPosition());
 
-        tangent.normalized();
-
-        return tangent;
+        return tangent.normalized();
     }
 }
