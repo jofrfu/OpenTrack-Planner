@@ -81,15 +81,17 @@ public class TrackLayoutNode extends AnchorNode {
                 List<Node> currentConnections = currentNode.getChildren();
                 List<Node> prevConnections = prevNode.getChildren();
 
-                loop:
+                List<Node> openEnds = new ArrayList<>(currentConnections);
+
                 for(Node currentEdge : currentConnections) {
                     for(Node prevEdge : prevConnections) {
-                        if(!TrackNode.checkConnection(currentEdge, prevEdge)) {
-                            controlPoints.add(currentEdge);
-                            break loop;
+                        if(TrackNode.checkConnection(currentEdge, prevEdge)) {
+                            openEnds.remove(currentEdge);
                         }
                     }
                 }
+
+                controlPoints.addAll(openEnds);
             }
         }
     }
