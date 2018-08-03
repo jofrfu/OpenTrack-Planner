@@ -8,8 +8,6 @@ import com.google.ar.sceneform.math.Vector3;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.opentrack.jonasfuhrmann.opentrackplanner.VectorHelper.almostEquals;
-
 public class TrackLayoutNode extends AnchorNode {
     private List<TrackNode> trackList;
     private List<Node> controlPoints;
@@ -26,7 +24,6 @@ public class TrackLayoutNode extends AnchorNode {
         addChild(track);
         trackList.add(track);
         openEdges.addAll(track.getChildren());
-        controlPoints.addAll(track.getChildren());
     }
 
     public boolean connect(TrackNode track) {
@@ -39,11 +36,17 @@ public class TrackLayoutNode extends AnchorNode {
                     track.setParent(this);
                     track.setLocalPosition(localPoint);
                     track.setWorldRotation(rotation);
-                    trackList.add(track);
                     openEdges.addAll(nodes);
                     openEdges.remove(edge1);
                     openEdges.remove(edge2);
-                    addControlPoint(edge1); // for hermite curve
+
+                    TrackNode connectedNode = (TrackNode) edge2.getParent();
+                    int index = trackList.indexOf(connectedNode);
+                    if(index == 0) {
+                        trackList.add(0, track);
+                    } else if(index == trackList.size()-1) {
+                        trackList.add(track);
+                    }
                     return true;
                 }
             }
@@ -51,18 +54,42 @@ public class TrackLayoutNode extends AnchorNode {
         return false;
     }
 
-    private void addControlPoint(Node edge) {
-        if(!controlPoints.isEmpty()) {
-            Node parent = edge.getParent();
-            List<Node> excluded = new ArrayList<>(parent.getChildren());
-            excluded.remove(edge);
+    public void createControlPoints() {
+        controlPoints.clear();
 
-            if (TrackNode.checkConnection(controlPoints.get(0), edge)) {
-                for (Node temp : excluded) {
-                    controlPoints.add(0, temp);
+        for(int i = 0; i < trackList.size(); i++) {
+            if(i < trackList.size()-1) {
+                TrackNode currentNode = trackList.get(i);
+                TrackNode nextNode = trackList.get(i+1);
+
+                List<Node> currentConnections = currentNode.getChildren();
+                List<Node> nextConnections = nextNode.getChildren();
+
+                loop:
+                for(Node currentEdge : currentConnections) {
+                    for(Node nextEdge : nextConnections) {
+                        if(TrackNode.checkConnection(currentEdge, nextEdge)) {
+                            controlPoints.add(currentEdge);
+                            break loop;
+                        }
+                    }
                 }
-            } else if (TrackNode.checkConnection(controlPoints.get(controlPoints.size() - 1), edge)) {
-                controlPoints.addAll(excluded);
+            } else if(i > 0) {
+                TrackNode currentNode = trackList.get(i);
+                TrackNode prevNode = trackList.get(i-1);
+
+                List<Node> currentConnections = currentNode.getChildren();
+                List<Node> prevConnections = prevNode.getChildren();
+
+                loop:
+                for(Node currentEdge : currentConnections) {
+                    for(Node prevEdge : prevConnections) {
+                        if(!TrackNode.checkConnection(currentEdge, prevEdge)) {
+                            controlPoints.add(currentEdge);
+                            break loop;
+                        }
+                    }
+                }
             }
         }
     }

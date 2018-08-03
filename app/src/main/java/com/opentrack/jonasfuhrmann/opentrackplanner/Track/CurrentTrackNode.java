@@ -29,7 +29,7 @@ public class CurrentTrackNode extends TrackNode {
     private static final float ROTATION_STEP = 10*2.0f*(float)Math.PI/360.0f;
     private float rad;
 
-    private static final double SIMULATION_STEP = 0.001;
+    private static final double SIMULATION_STEP = 0.01;
 
     private Session mSession;
     private TrackLoader mTrackLoader;
@@ -77,8 +77,11 @@ public class CurrentTrackNode extends TrackNode {
         }
 
         if(!simulationRunning) {
-            simulationRunning = true;
+            for(TrackLayoutNode node : trackLayoutNodes) {
+                node.createControlPoints();
+            }
             currentStep = 0;
+            simulationRunning = true;
         }
     }
 
@@ -96,7 +99,8 @@ public class CurrentTrackNode extends TrackNode {
                 }
 
                 if(position != null) {
-                    trainNode.setWorldPosition(position);
+                    Vector3 up = node.localToWorldDirection(Vector3.up());
+                    trainNode.setWorldPosition(Vector3.add(position, up.scaled(0.06f)));
                 }
             }
         }
