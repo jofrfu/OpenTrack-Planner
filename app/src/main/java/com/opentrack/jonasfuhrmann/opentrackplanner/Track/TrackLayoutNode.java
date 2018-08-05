@@ -18,8 +18,6 @@ public class TrackLayoutNode extends AnchorNode {
     private List<Node> controlPoints;
     private List<Node> openEdges;
 
-    private ModelRenderable ball;
-
     /**
      * Creates a new {@link TrackLayoutNode}.
      * @param track Consists of at least one {@link TrackNode}
@@ -31,7 +29,6 @@ public class TrackLayoutNode extends AnchorNode {
         addChild(track);
         trackList.add(track);
         openEdges.addAll(track.getChildren());
-        ball = ShapeFactory.makeSphere(0.01f, Vector3.zero(), track.getRenderable().getMaterial());
     }
 
     /**
@@ -72,9 +69,6 @@ public class TrackLayoutNode extends AnchorNode {
      * Creates control points from all tracks of this {@link TrackLayoutNode} for the hermite spline.
      */
     public void createControlPoints() {
-        for(Node node : controlPoints) {
-            node.setRenderable(null);
-        }
         controlPoints.clear();
 
         for(int i = 0; i < trackList.size(); i++) {
@@ -94,7 +88,7 @@ public class TrackLayoutNode extends AnchorNode {
                         }
                     }
                 }
-            } else if(i == trackList.size()-1) {
+            } else if(i == trackList.size()-1 && i > 0) {
                 TrackNode currentNode = trackList.get(i);
                 TrackNode prevNode = trackList.get(i-1);
 
@@ -114,10 +108,6 @@ public class TrackLayoutNode extends AnchorNode {
                 controlPoints.addAll(openEnds);
             }
         }
-
-        for(Node node : controlPoints) {
-            node.setRenderable(ball);
-        }
     }
 
     /**
@@ -133,8 +123,6 @@ public class TrackLayoutNode extends AnchorNode {
         }
         return null;
     }
-
-    // TODO: Fix hermite spline
 
     /**
      * Evaluates the hermite spline, which is constructed by {@link #createControlPoints()}.
@@ -188,6 +176,6 @@ public class TrackLayoutNode extends AnchorNode {
 
         Vector3 tangent = Vector3.subtract(controlNode.getWorldPosition(), parent.getWorldPosition());
 
-        return tangent.normalized();
+        return tangent.scaled(2);
     }
 }
