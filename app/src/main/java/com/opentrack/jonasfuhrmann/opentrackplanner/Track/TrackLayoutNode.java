@@ -168,8 +168,8 @@ public class TrackLayoutNode extends AnchorNode {
 
     /**
      * Gets the tangent of a node for the hermite spline.
-     * @param controlNode The current node which is one control point
-     * @return The normalized tangent
+     * @param controlNode The current node, which is one control point
+     * @return The tangent
      */
     private Vector3 getControlTangent(Node controlNode) {
         Node parent = controlNode.getParent();
