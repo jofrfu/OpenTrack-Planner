@@ -36,6 +36,12 @@ public class TrackNode extends Node {
             }
     };
 
+    protected TrackType trackType;
+
+    public TrackNode(TrackType type) {
+        trackType = type;
+    }
+
     /**
      * Sets all origins of direction vectors for the connection edges.
      * @param directionOrigins The origins of the direction Vectors, end point is the origin of the track
@@ -49,7 +55,7 @@ public class TrackNode extends Node {
         }
 
         for(Vector3 normalOrigin : directionOrigins) {
-            Node temp = new Node();
+            Node temp = new EdgeNode();
             temp.setLocalPosition(normalOrigin);
             temp.setParent(this);
         }
@@ -101,5 +107,49 @@ public class TrackNode extends Node {
             edges[i] = getChildren().get(i).getWorldPosition();
         }
         return edges;
+    }
+
+    public Vector3 evaluateBezier(double t, EdgeNode startNode) {
+        if(t < 0 || t > 1) {
+            return null;
+        }
+
+        List<Node> children = new ArrayList<>(getChildren());
+        children.remove(startNode);
+        EdgeNode endNode = (EdgeNode) children.get(0);
+
+        switch (trackType) {
+            case STRAIGHT:
+                return linearBezier(t, startNode.getWorldPosition(), endNode.getWorldPosition());
+            case R104_CURVE:
+                return quadraticBezier(t, startNode.getWorldPosition(), endNode.getWorldPosition());
+            default:
+                return null;
+        }
+    }
+
+    private Vector3 linearBezier(double t, Vector3 startPosition, Vector3 endPosition) {
+        return Vector3.add(startPosition.scaled((float) (1.0-t)), endPosition.scaled((float) t));
+    }
+
+    private Vector3 quadraticBezier(double t, Vector3 startPosition, Vector3 endPosition) {
+        Vector3 controlPosition = getWorldPosition();
+
+        return Vector3.add(
+                Vector3.add(
+                        Vector3.add(
+                                Vector3.subtract(
+                                        startPosition,
+                                        controlPosition.scaled(2)
+                                ),
+                                endPosition
+                        ).scaled((float)(t*t)),
+                        Vector3.add(
+                                startPosition.scaled(-2),
+                                controlPosition.scaled(2)
+                        ).scaled((float)t)
+                ),
+                startPosition
+        );
     }
 }

@@ -37,7 +37,6 @@ public class CurrentTrackNode extends TrackNode {
 
     private Session mSession;
     private TrackLoader mTrackLoader;
-    private TrackType trackType;
     private List<TrackLayoutNode> trackLayoutNodes;
 
     private boolean simulationRunning;
@@ -52,7 +51,7 @@ public class CurrentTrackNode extends TrackNode {
      * @param trackLoader For {@link com.google.ar.sceneform.rendering.Renderable} creation
      */
     public CurrentTrackNode(Session session, TrackLoader trackLoader) {
-        super();
+        super(null);
         mSession = session;
         mTrackLoader = trackLoader;
         trackLayoutNodes = new ArrayList<>();
@@ -94,9 +93,6 @@ public class CurrentTrackNode extends TrackNode {
         }
 
         if(!simulationRunning) {
-            for(TrackLayoutNode node : trackLayoutNodes) {
-                node.createControlPoints();
-            }
             trainNode.setEnabled(true);
             currentStep = 0;
             simulationRunning = true;
@@ -114,9 +110,9 @@ public class CurrentTrackNode extends TrackNode {
 
         if(simulationRunning && !trackLayoutNodes.isEmpty()) {
             TrackLayoutNode node = trackLayoutNodes.get(trackLayoutNodes.size()-1);
-            Vector3 position = node.evaluateHermite(currentStep);
-            Vector3 stepBefore = node.evaluateHermite(currentStep - TANGENT_STEP);
-            Vector3 stepAfter = node.evaluateHermite(currentStep + TANGENT_STEP);
+            Vector3 position = node.evaluateCurve(currentStep);
+            Vector3 stepBefore = node.evaluateCurve(currentStep - TANGENT_STEP);
+            Vector3 stepAfter = node.evaluateCurve(currentStep + TANGENT_STEP);
             currentStep += SIMULATION_STEP;
 
             if(currentStep >= 1.0) {
@@ -199,7 +195,7 @@ public class CurrentTrackNode extends TrackNode {
     public void placeTrack() {
         if(trackType == null) return;
 
-        TrackNode trackNode = new TrackNode();
+        TrackNode trackNode = new TrackNode(trackType);
         trackNode.setWorldPosition(getWorldPosition());
         trackNode.setWorldRotation(getWorldRotation());
         trackNode.setDirectionOrigins(getLocalEdges(trackType));
