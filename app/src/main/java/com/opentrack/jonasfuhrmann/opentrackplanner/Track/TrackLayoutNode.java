@@ -70,8 +70,14 @@ public class TrackLayoutNode extends AnchorNode {
         return null;
     }
 
+    /**
+     * Evaluates a curve, spanned across all {@link TrackNode}s of this {@link TrackLayoutNode}.
+     * @param t The desired point on the spline, can only be between 0 and 1
+     * @return The position on the spline, if any, null otherwise
+     */
     public Vector3 evaluateCurve(double t) {
-        if(t < 0 || t > 1) return null;
+        if(t < 0) t = 0;
+        if(t > 1) t = 1;
 
         double delta = 1.0 / size;
         int index = (int)(t / delta);
@@ -83,6 +89,11 @@ public class TrackLayoutNode extends AnchorNode {
         return track.evaluateBezier(tLocal, edge);
     }
 
+    /**
+     * Traverse through the layout and finds the starting point of the track at the desired index.
+     * @param index The index of the returned {@link EdgeNode}'s {@link TrackNode}
+     * @return The starting edge of the {@link TrackNode} at the index
+     */
     private EdgeNode getEdge(int index) {
         EdgeNode currentEdge = (EdgeNode) openEdges.get(0);
 

@@ -109,6 +109,12 @@ public class TrackNode extends Node {
         return edges;
     }
 
+    /**
+     * Evaluates a Bezier curve spanned across this {@link TrackNode}.
+     * @param t The desired point on the Bezier curve
+     * @param startNode The starting point of the curve
+     * @return The desired position on the curve, if any, null otherwise
+     */
     public Vector3 evaluateBezier(double t, EdgeNode startNode) {
         if(t < 0 || t > 1) {
             return null;
@@ -128,11 +134,26 @@ public class TrackNode extends Node {
         }
     }
 
+    /**
+     * Calculates the position on a linear Bezier "curve". Used to calculate positions on straights.
+     * @param t The desired position
+     * @param startPosition The starting point of the curve
+     * @param endPosition The end point of the curve
+     * @return The desired position on the curve
+     */
     private Vector3 linearBezier(double t, Vector3 startPosition, Vector3 endPosition) {
         return Vector3.add(startPosition.scaled((float) (1.0-t)), endPosition.scaled((float) t));
     }
 
+    /**
+     * Calculates the position on a quadratic Bezier curve. Used to calculate positions on curves.
+     * @param t The desired position
+     * @param startPosition The starting point of the curve
+     * @param endPosition The end point of the curve
+     * @return The desired position on the curve
+     */
     private Vector3 quadraticBezier(double t, Vector3 startPosition, Vector3 endPosition) {
+        // Control point is the origin of the track (relative positions known at compile time)
         Vector3 controlPosition = getWorldPosition();
 
         return Vector3.add(
