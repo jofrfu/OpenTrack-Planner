@@ -47,3 +47,8 @@ sceneform.asset('sampledata/models/R104_curve.obj',
         'default',
         'sampledata/models/R104_curve.sfa',
         'src/main/res/raw/r104_curve')
+
+sceneform.asset('sampledata/models/motor.obj',
+        'default',
+        'sampledata/models/motor.sfa',
+        'src/main/res/raw/motor')

@@ -86,10 +86,9 @@ public class CurrentTrackNode extends TrackNode {
      */
     public void simulateTrain() {
         if(trainNode == null) {
-            ModelRenderable train = ShapeFactory.makeCube(Vector3.one().scaled(0.05f), Vector3.zero(), getRenderable().getMaterial());
             trainNode = new Node();
             trainNode.setParent(getScene());
-            trainNode.setRenderable(train);
+            trainNode.setRenderable(mTrackLoader.createTrainRenderable());
         }
 
         if(!simulationRunning) {
@@ -121,7 +120,8 @@ public class CurrentTrackNode extends TrackNode {
 
             if(position != null) {
                 Vector3 up = node.localToWorldDirection(Vector3.up());
-                trainNode.setWorldPosition(Vector3.add(position, up.scaled(0.05f)));
+                // 96 mm track height - 6.5 mm flange
+                trainNode.setWorldPosition(Vector3.add(position, up.scaled(0.0096f-0.00065f)));
 
                 if(stepBefore != null && stepAfter != null) {
                     Vector3 direction = Vector3.subtract(stepAfter, stepBefore);

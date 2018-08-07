@@ -5,6 +5,7 @@ import android.view.Gravity;
 import android.widget.Toast;
 
 import com.google.ar.sceneform.rendering.ModelRenderable;
+import com.opentrack.jonasfuhrmann.opentrackplanner.R;
 
 /**
  * A factory to create track {@link com.google.ar.sceneform.rendering.Renderable}s.
@@ -13,6 +14,7 @@ public class TrackLoader {
 
     private Context mContext;
     private ModelRenderable modelList[];
+    private ModelRenderable trainModel;
 
     /**
      * Creates a new {@link TrackLoader}.
@@ -39,6 +41,20 @@ public class TrackLoader {
                             }
                     );
         }
+
+        ModelRenderable.builder()
+                .setSource(mContext, R.raw.motor)
+                .build()
+                .thenAccept(modelRenderable -> trainModel = modelRenderable)
+                .exceptionally(
+                        throwable -> {
+                            Toast toast =
+                                    Toast.makeText(mContext, "Unable to load motor renderable", Toast.LENGTH_LONG);
+                            toast.setGravity(Gravity.CENTER, 0, 0);
+                            toast.show();
+                            return null;
+                        }
+                );
     }
 
     /**
@@ -49,5 +65,9 @@ public class TrackLoader {
      */
     public ModelRenderable createRenderable(TrackType type) {
         return modelList[type.ordinal()];
+    }
+
+    public ModelRenderable createTrainRenderable() {
+        return trainModel;
     }
 }
