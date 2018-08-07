@@ -52,3 +52,8 @@ sceneform.asset('sampledata/models/motor.obj',
         'default',
         'sampledata/models/motor.sfa',
         'src/main/res/raw/motor')
+
+sceneform.asset('sampledata/models/R40_curve.obj',
+        'default',
+        'sampledata/models/R40_curve.sfa',
+        'src/main/res/raw/r40_curve')

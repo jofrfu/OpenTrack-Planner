@@ -24,6 +24,11 @@ public class TrackNode extends Node {
                     new Vector3(0,0,-64f*SCALE),
                     new Vector3(0,0, 64f*SCALE)
             },
+            // R40
+            {
+                    new Vector3(0, 0, -62F*SCALE),
+                    new Vector3(24.3f*SCALE, 0,  58.666F*SCALE)
+            },
             // R104 TODO: corrections
             {
                     new Vector3(0,0,-80f*SCALE),
@@ -127,6 +132,8 @@ public class TrackNode extends Node {
         switch (trackType) {
             case STRAIGHT:
                 return linearBezier(t, startNode.getWorldPosition(), endNode.getWorldPosition());
+            case R40_CURVE:
+                return quadraticBezier(t, startNode.getWorldPosition(), endNode.getWorldPosition());
             case R104_CURVE:
                 return quadraticBezier(t, startNode.getWorldPosition(), endNode.getWorldPosition());
             default:

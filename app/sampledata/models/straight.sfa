@@ -35,7 +35,7 @@
       collision: {},
       file: "sampledata/models/straight.obj",
       name: "straight",
-      scale: 0.001,
+      scale: 1.0,
    },
    version: "0.51:1",
 }

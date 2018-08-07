@@ -1,7 +1,7 @@
 {
    materials: [
       {
-         name: "DefaultMaterial",
+         name: "Material_72_c",
          parameters: [
             {
                baseColor: null,
@@ -33,9 +33,9 @@
          "Orientation",
       ],
       collision: {},
-      file: "sampledata/models/R104_curve.obj",
-      name: "R104_curve",
-      scale: 1.0,
+      file: "sampledata/models/R40_curve.obj",
+      name: "R40_curve",
+      scale: 0.04,
    },
    version: "0.51:1",
 }
